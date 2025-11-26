@@ -1,0 +1,23 @@
+{
+  "name": "test-gs-ui-app",
+  "version": "1.0.0",
+  "description": "Test app for @bc-testing/gs-ui package",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "postinstall": "node scripts/copy-ui-components.cjs"
+  },
+  "dependencies": {
+    "@bc-testing/gs-ui": "^1.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.1"
+  }
+}
