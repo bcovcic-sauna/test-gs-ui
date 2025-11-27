@@ -12,13 +12,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const PACKAGE_NAME = '@bc-testing/gs-ui';
 const PACKAGE_ROOT = path.join(__dirname, '..', 'node_modules', PACKAGE_NAME);
 const PACKAGE_SRC = path.join(PACKAGE_ROOT, 'src');
 const TARGET_DIR = path.join(__dirname, '..', 'components', 'ui');
-const CONSUMER_PKG_PATH = path.join(__dirname, '..', 'package.json');
 
 function copyFiles(src, dest) {
   if (!fs.existsSync(dest)) {
@@ -46,43 +44,6 @@ function copyFiles(src, dest) {
   }
   
   return copiedFiles;
-}
-
-function addDependencies() {
-  // Read gs-ui package.json to get peer dependencies
-  const gsUiPkgPath = path.join(PACKAGE_ROOT, 'package.json');
-  if (!fs.existsSync(gsUiPkgPath)) {
-    console.warn('   ⚠️  Could not find gs-ui package.json');
-    return false;
-  }
-
-  const gsUiPkg = JSON.parse(fs.readFileSync(gsUiPkgPath, 'utf8'));
-  const peerDeps = gsUiPkg.peerDependencies || {};
-  
-  // Read consuming app's package.json
-  const consumerPkg = JSON.parse(fs.readFileSync(CONSUMER_PKG_PATH, 'utf8'));
-  consumerPkg.dependencies = consumerPkg.dependencies || {};
-  
-  // Find missing dependencies (exclude react/react-dom as they should already be there)
-  const skipDeps = ['react', 'react-dom'];
-  const missingDeps = [];
-  
-  for (const [dep, version] of Object.entries(peerDeps)) {
-    if (skipDeps.includes(dep)) continue;
-    if (!consumerPkg.dependencies[dep]) {
-      consumerPkg.dependencies[dep] = version;
-      missingDeps.push(dep);
-    }
-  }
-  
-  if (missingDeps.length > 0) {
-    // Write updated package.json
-    fs.writeFileSync(CONSUMER_PKG_PATH, JSON.stringify(consumerPkg, null, 2) + '\n');
-    console.log(`   ✓ Added ${missingDeps.length} dependencies to package.json`);
-    return true; // Signal that npm install is needed
-  }
-  
-  return false;
 }
 
 function main() {
@@ -140,20 +101,13 @@ export * from './utils/utils';
     
     fs.writeFileSync(path.join(TARGET_DIR, 'index.ts'), indexContent);
     console.log(`   ✓ Created index.ts with ${componentFiles.length} exports`);
-    
-    // 4. Add required dependencies to consuming app
-    const needsInstall = addDependencies();
-    
+
     console.log(`✅ Successfully copied ${totalFiles} source files!`);
     console.log(`   Components are now available at: ${path.relative(process.cwd(), TARGET_DIR)}`);
     console.log(`   Import example: import { Button } from '@/components/ui';`);
     console.log(`   ⚠️  Note: Do not modify files in components/ui/`);
     console.log(`   They will be overwritten on package updates.`);
     
-    if (needsInstall) {
-      console.log(`\n🔄 Dependencies were added to package.json.`);
-      console.log(`   Run 'npm install' to install them.`);
-    }
   } catch (error) {
     console.error(`❌ Error copying components:`, error);
     process.exit(1);
